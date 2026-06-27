@@ -1,6 +1,6 @@
 ---
 name: test-author
-description: Write tests for changed code, matching the project's existing test framework, style, and directory layout. Language-agnostic — detects the toolchain. Use to cover a new function/handler, a bug fix, or an untested diff.
+description: Write tests for changed code, matching the project's existing test framework, style, and directory layout. Language-agnostic — detects the toolchain. Use proactively after adding a function/handler or fixing a bug that lacks coverage, or when asked to write, add, or backfill tests for a file or diff.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 maxTurns: 25

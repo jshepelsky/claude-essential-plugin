@@ -1,6 +1,6 @@
 ---
 name: dead-code-detector
-description: Find code that is defined but never referenced — unused files, exported symbols with no importers, unreferenced templates/assets, and public handlers with no route. Language-agnostic. Use proactively when removing features or cleaning up.
+description: Find code that is defined but never referenced — unused files, exported symbols with no importers, unreferenced templates/assets, and public handlers with no route. Language-agnostic. Use proactively when removing features or cleaning up, or when asked to find dead, unused, orphaned, or unreferenced code.
 tools: Bash, Read, Grep, Glob
 model: haiku
 maxTurns: 20

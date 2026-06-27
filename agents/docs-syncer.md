@@ -1,6 +1,6 @@
 ---
 name: docs-syncer
-description: Detect documentation that has drifted from the code — stale READMEs, wrong signatures in docstrings/comments, outdated examples, renamed flags/env vars. Language-agnostic. Use after changes to public APIs, CLI flags, config, or setup steps.
+description: Detect documentation that has drifted from the code — stale READMEs, wrong signatures in docstrings/comments, outdated examples, renamed flags/env vars. Language-agnostic. Use proactively after changing public APIs, CLI flags, env vars, config keys, routes, or setup steps, or when asked to check for stale or outdated docs.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 maxTurns: 15
