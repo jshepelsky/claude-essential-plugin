@@ -1,6 +1,6 @@
 ---
 name: copy-reviewer
-description: Audit user-facing copy — UI strings, templates, docs, emails — for AI writing giveaways and style violations. Flags banned words, structural tells, hedging, and other machine-generated patterns. Use when writing or auditing copy.
+description: Audit user-facing copy — UI strings, templates, docs, emails — for AI writing giveaways and style violations. Flags banned words, structural tells, hedging, and other machine-generated patterns. Use proactively after user-facing text changes (UI strings, templates/views, README/docs, email copy), or when asked to review copy or remove AI-sounding writing.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
