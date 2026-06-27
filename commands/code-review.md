@@ -35,6 +35,7 @@ Categorize the changed paths into these buckets (a file can belong to several). 
 | `routes` | a central route table / URL config |
 | `migrations` | schema migration files |
 | `webhooks` | inbound webhook receivers or payment/event integration code |
+| `manifests` | dependency manifests/lockfiles (`package.json`, `composer.json`, `requirements*`, `go.mod`, `Gemfile`, `Cargo.toml`, `*.lock`) |
 
 If nothing reviewable changed (only vendored deps, lockfiles, docs), print "Nothing to review." and stop.
 
@@ -53,6 +54,8 @@ Pick agents from the buckets, then launch **all** of them in a single message (m
 | `webhook-reviewer` | `webhooks` non-empty |
 | `route-auditor` | `routes` non-empty |
 | `migration-validator` | `migrations` non-empty |
+| `dependency-auditor` | `manifests` non-empty |
+| `docs-syncer` | a documented surface changed (public signature, CLI flag, env var, config key, route) |
 | `copy-reviewer` | `templates` non-empty (or user-facing strings changed) |
 
 Pass each agent the changed-file scope from Step 1 (e.g. "Review these changed files: …"). Wait for all agents to complete before continuing.
@@ -64,10 +67,10 @@ Pass each agent the changed-file scope from Step 1 (e.g. "Review these changed f
 Collect all agent outputs. De-duplicate findings that reference the same file and line. Present in this order:
 
 ### Critical
-Security vulnerabilities, logic bugs that cause incorrect behavior or crashes, broken webhook handling.
+Security vulnerabilities, logic bugs that cause incorrect behavior or crashes, broken webhook handling, dependencies with known critical/high CVEs.
 
 ### Warning
-Performance issues, route mismatches, migration problems, logic warnings, security best-practice gaps.
+Performance issues, route mismatches, migration problems, logic warnings, security best-practice gaps, outdated/unused dependencies, documentation that drifted from the code.
 
 ### Convention / Style
 Linter violations, dead imports, copy issues.

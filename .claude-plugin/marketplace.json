@@ -7,7 +7,7 @@
     {
       "name": "essentials",
       "source": "./",
-      "description": "Codebase-agnostic code-review and quality primitives. Stack-detecting agents, commands, a skill, and workflows that work on any language or framework."
+      "description": "Codebase-agnostic code-review and quality primitives. Stack-detecting agents, commands, skills, and workflows that work on any language or framework."
     }
   ]
 }

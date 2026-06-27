@@ -1,6 +1,6 @@
 export const meta = {
   name: 'pre-pr-review',
-  description: 'Run the test suite, then parallel security, logic, performance, lint, and route review of changed files',
+  description: 'Run the test suite, then parallel security, logic, performance, lint, route, and dependency review of changed files',
   phases: [
     { title: 'Tests' },
     { title: 'Discover' },
@@ -57,7 +57,7 @@ if (!discovery.files.length) {
 log(`Reviewing ${discovery.files.length} changed file(s): ${discovery.fileList}`)
 
 phase('Review')
-const [security, logic, perf, lint, routes] = await parallel([
+const [security, logic, perf, lint, routes, deps] = await parallel([
   () => agent(
     `Security review of these changed files. Detect the stack first, then check for: injection (input concatenated into a query/command vs parameterized), auth/authorization bypass, missing CSRF on mutations, XSS/output-encoding gaps, exposed secrets, missing input validation. Files: ${discovery.fileList}\n\nRead the files and git diff as needed. Report issues with file:line and severity.`,
     { phase: 'Review', label: 'security', agentType: 'security-reviewer' }
@@ -78,11 +78,15 @@ const [security, logic, perf, lint, routes] = await parallel([
     'Detect the web framework and audit its route table against handlers: (1) routes pointing to a missing handler/method, (2) public handlers with no route (only if routing is explicit). Report with file references.',
     { phase: 'Review', label: 'routes', agentType: 'route-auditor' }
   ),
+  () => agent(
+    'Audit dependencies for known vulnerabilities using the ecosystem\'s native scanner (npm audit / pip-audit / govulncheck / bundle audit / cargo audit / composer audit, or osv-scanner). Report any package with a known CVE: package@version, advisory/severity, and the fixed version. If no manifest/lockfile is present or no scanner is installed, say so.',
+    { phase: 'Review', label: 'dependencies', agentType: 'dependency-auditor' }
+  ),
 ])
 
 phase('Synthesize')
 const report = await agent(
-  `Synthesize these parallel code-review findings into one prioritized report. Group by severity: Critical → High → Medium → Low → Info. For each issue: file:line, the problem, a one-line fix suggestion. Omit duplicates and empty sections.\n\nSecurity:\n${security}\n\nLogic:\n${logic}\n\nPerformance:\n${perf}\n\nLint:\n${lint}\n\nRoutes:\n${routes}`,
+  `Synthesize these parallel code-review findings into one prioritized report. Group by severity: Critical → High → Medium → Low → Info. For each issue: file:line, the problem, a one-line fix suggestion. Omit duplicates and empty sections.\n\nSecurity:\n${security}\n\nLogic:\n${logic}\n\nPerformance:\n${perf}\n\nLint:\n${lint}\n\nRoutes:\n${routes}\n\nDependencies:\n${deps}`,
   { phase: 'Synthesize' }
 )
 
