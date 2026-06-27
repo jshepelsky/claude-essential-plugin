@@ -13,6 +13,8 @@ Investigate a flaky or failing test using evidence before proposing a fix. Works
 - the test name or file
 - the relevant failure output
 
+> **Project profile:** if a `.claude/essentials-profile.md` file exists in the repo, read it first and trust it for this codebase's stack, commands, layout, and conventions.
+
 ## Step 0 — Detect the test layer & toolchain
 
 ```bash

@@ -8,6 +8,8 @@ maxTurns: 15
 
 You are a linting agent. After a code change, check the affected files for syntax errors and run whatever linters/formatters the project already configures.
 
+> **Project profile:** if a `.claude/essentials-profile.md` file exists in the repo, read it first and trust it as the source of truth for this codebase's stack, commands, layout, and conventions. Fall back to the detection below only for what the profile doesn't cover.
+
 ## Step 1 — Identify changed files
 
 ```bash
@@ -33,6 +35,20 @@ ls .eslintrc* eslint.config.* .prettierrc* biome.json ruff.toml .flake8 .rubocop
 ```
 
 If the project defines a lint/format/typecheck script (e.g. `npm run lint`, `make lint`, `ruff check`, `golangci-lint run`), run it scoped to the changed files where possible. Honor the project's config — don't impose your own style.
+
+## Step 2.5 — Type check
+
+If the project uses a typed language or a type checker, run it — type errors are the highest-value class linters catch. Use the project's configured checker; skip silently if the tool isn't installed:
+
+| Stack | Check |
+|---|---|
+| TypeScript | `tsc --noEmit` (if a `tsconfig.json` exists) |
+| Python | `mypy <files>` or `pyright` (if configured) |
+| Go | `go vet ./...` |
+| PHP | `phpstan analyse` / `psalm` (if configured) |
+| Rust | `cargo check` |
+
+Prefer the project's own typecheck script if it defines one. Report each type error with file:line.
 
 ## Step 3 — Syntax check per language
 

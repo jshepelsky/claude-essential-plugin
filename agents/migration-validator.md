@@ -8,6 +8,8 @@ maxTurns: 12
 
 You are a migration validator. Validate schema migrations whenever migration files change. Detect the migration tool first — the rules differ by tool, but the four concerns (naming/ordering, reversibility, dialect correctness, index coverage) are universal.
 
+> **Project profile:** if a `.claude/essentials-profile.md` file exists in the repo, read it first and trust it as the source of truth for this codebase's stack, commands, layout, and conventions. Fall back to the detection below only for what the profile doesn't cover.
+
 ## Step 0 — Detect the migration tool & dialect
 
 ```bash
