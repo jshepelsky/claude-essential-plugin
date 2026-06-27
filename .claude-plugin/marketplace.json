@@ -1,0 +1,13 @@
+{
+  "name": "claude-essentials",
+  "owner": {
+    "name": "Joshua Shepelsky"
+  },
+  "plugins": [
+    {
+      "name": "essentials",
+      "source": "./",
+      "description": "Codebase-agnostic code-review and quality primitives. Stack-detecting agents, commands, a skill, and workflows that work on any language or framework."
+    }
+  ]
+}
