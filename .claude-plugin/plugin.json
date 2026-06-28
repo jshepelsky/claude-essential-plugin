@@ -1,7 +1,7 @@
 {
   "name": "essentials",
   "description": "Codebase-agnostic code-review and quality primitives: security, logic, performance, lint, dead-code, dependency, copy, UI, migration, route, webhook, docs, and test agents; an orchestrated /code-review; git commit/PR helpers; evidence-first triage skills; and a /first-run profile that tailors them all to your stack. Stack-detecting — works on any language or framework.",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "author": {
     "name": "Joshua Shepelsky"
   },

@@ -54,6 +54,10 @@ Evidence-first triage procedures — detect the stack, gather proof, then propos
 - **regression-bisect** — "worked before, broke now": drives `git bisect run` to the culprit commit.
 - **stacktrace-triage** — a crash/exception/error log: locate the throwing frame and classify the cause.
 
+Plus a rewrite skill:
+
+- **humanize** — rewrites prose to strip AI writing tells (em dashes, rule of three, significance inflation, filler). The fix counterpart to `/copy-review`'s audit. Adapted from the MIT-licensed [humanizer](https://github.com/blader/humanizer) skill and [Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing).
+
 ### Workflows
 
 Multi-agent scripts in `workflows/` (run with the Workflow tool): `pre-pr-review`, `dead-code-sweep`, `e2e-failure-triage`.

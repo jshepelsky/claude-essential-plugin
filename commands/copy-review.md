@@ -15,3 +15,5 @@ Report all violations grouped by file:
 ```
 
 End with a summary table of total violations by rule category. If no violations are found, say so clearly.
+
+To rewrite the flagged text rather than just list fixes, hand off to the **humanize** skill — it's the rewrite counterpart to this audit.
