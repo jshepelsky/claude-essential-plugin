@@ -17,6 +17,13 @@ git diff --name-only HEAD; git diff --name-only --cached
 git diff HEAD
 ```
 
+If the working tree is clean, check the whole branch — diff against the default branch (the profile's `Default branch`, else detect it):
+
+```bash
+base=$(git symbolic-ref -q --short refs/remotes/origin/HEAD | sed 's|.*/||'); base=${base:-main}
+git diff $(git merge-base "$base" HEAD) HEAD
+```
+
 Focus on changes that documentation tends to mirror: public function/class signatures, exported APIs, CLI flags/commands, environment variables, config keys, HTTP routes, and install/setup steps.
 
 ## Step 2 — Find the docs that reference them
@@ -37,6 +44,7 @@ For each reference, confirm it still matches the code. Flag:
 - **Renamed/removed** — a flag, env var, config key, route, or command that the docs still mention by its old name (or at all).
 - **Stale example** — a code sample or command in the docs that would now error or produce different output.
 - **Stale setup** — install/build/run steps that reference a removed script, changed command, or dropped dependency.
+- **Env-example drift** — if the project keeps a `.env.example`/config sample: an env var the changed code reads that's missing from it, or a var it lists that nothing reads anymore.
 - **Missing** — a newly added public flag/env var/route with no documentation (Info-level).
 
 Do **not** flag prose that's merely general, or internal/private symbols that docs don't claim to cover.

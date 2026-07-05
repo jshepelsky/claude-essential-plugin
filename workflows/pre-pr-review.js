@@ -11,7 +11,7 @@ export const meta = {
 
 phase('Tests')
 const tests = await agent(
-  'Detect this project\'s test command (check package.json scripts, Makefile, pytest/go/cargo/composer config, README) and run the fast/unit suite. Return whether all tests passed, the total test count, and — if any failed — the full failure output.',
+  'If .claude/essentials-profile.md exists, use its Test command; otherwise detect this project\'s test command (check package.json scripts, Makefile, pytest/go/cargo/composer config, README). Run the fast/unit suite. Return whether all tests passed, the total test count, and — if any failed — the full failure output.',
   {
     phase: 'Tests',
     label: 'tests',
@@ -35,7 +35,7 @@ log(`Tests: ${tests.summary}`)
 
 phase('Discover')
 const discovery = await agent(
-  'Run `git diff main --name-only` and return the changed source files. If on main, use `git diff HEAD~1 --name-only`. Exclude vendored/generated dirs (vendor/, node_modules/, dist/, build/) and lockfiles. Return the paths as an array and as a space-separated string.',
+  'Find the changed source files. Determine the default branch (the Default branch line in .claude/essentials-profile.md if present, else `git symbolic-ref -q --short refs/remotes/origin/HEAD`, else main). If HEAD is not on it, run `git diff --name-only $(git merge-base <default> HEAD) HEAD`; if HEAD is on it, use `git diff --name-only HEAD~1 HEAD`. Also include uncommitted changes from `git diff --name-only HEAD`. Exclude vendored/generated dirs (vendor/, node_modules/, dist/, build/) and lockfiles. Return the paths as an array and as a space-separated string.',
   {
     phase: 'Discover',
     schema: {
@@ -60,27 +60,27 @@ phase('Review')
 const [security, logic, perf, lint, routes, deps] = await parallel([
   () => agent(
     `Security review of these changed files. Detect the stack first, then check for: injection (input concatenated into a query/command vs parameterized), auth/authorization bypass, missing CSRF on mutations, XSS/output-encoding gaps, exposed secrets, missing input validation. Files: ${discovery.fileList}\n\nRead the files and git diff as needed. Report issues with file:line and severity.`,
-    { phase: 'Review', label: 'security', agentType: 'security-reviewer' }
+    { phase: 'Review', label: 'security', agentType: 'essentials:security-reviewer' }
   ),
   () => agent(
     `Logic and correctness review of these changed files. Check for: unchecked nullable/"not found" results, inconsistent return shapes, response-mode confusion, input type coercion, missing guards on mutations, off-by-one/boundary bugs, swallowed errors. Files: ${discovery.fileList}\n\nReport issues with file:line.`,
-    { phase: 'Review', label: 'logic', agentType: 'logic-reviewer' }
+    { phase: 'Review', label: 'logic', agentType: 'essentials:logic-reviewer' }
   ),
   () => agent(
     `Performance review of these changed files. Check for: N+1 queries / remote calls in loops, unbounded reads without LIMIT/pagination, SELECT * / over-fetching, non-indexable query shapes, repeated work in loop conditions, and missing indexes on new FK columns. Files: ${discovery.fileList}\n\nReport issues with file:line.`,
-    { phase: 'Review', label: 'performance', agentType: 'performance-reviewer' }
+    { phase: 'Review', label: 'performance', agentType: 'essentials:performance-reviewer' }
   ),
   () => agent(
     `Lint these changed files: run the project's configured linters/formatters and a per-language syntax check, plus generic checks (no hardcoded secrets, no leftover debug artifacts, no merge-conflict markers). Files: ${discovery.fileList}`,
-    { phase: 'Review', label: 'lint', agentType: 'linter' }
+    { phase: 'Review', label: 'lint', agentType: 'essentials:linter' }
   ),
   () => agent(
     'Detect the web framework and audit its route table against handlers: (1) routes pointing to a missing handler/method, (2) public handlers with no route (only if routing is explicit). Report with file references.',
-    { phase: 'Review', label: 'routes', agentType: 'route-auditor' }
+    { phase: 'Review', label: 'routes', agentType: 'essentials:route-auditor' }
   ),
   () => agent(
     'Audit dependencies for known vulnerabilities using the ecosystem\'s native scanner (npm audit / pip-audit / govulncheck / bundle audit / cargo audit / composer audit, or osv-scanner). Report any package with a known CVE: package@version, advisory/severity, and the fixed version. If no manifest/lockfile is present or no scanner is installed, say so.',
-    { phase: 'Review', label: 'dependencies', agentType: 'dependency-auditor' }
+    { phase: 'Review', label: 'dependencies', agentType: 'essentials:dependency-auditor' }
   ),
 ])
 

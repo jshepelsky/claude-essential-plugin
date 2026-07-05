@@ -10,7 +10,7 @@ Run the project's test suite(s), then create a plan to fix any failures.
 
 ## Step 1 — Detect the test command
 
-Find how this project runs tests — don't assume:
+If `.claude/essentials-profile.md` exists, use its `Test` and `Test (E2E)` commands directly and skip detection. Otherwise find how this project runs tests — don't assume:
 
 ```bash
 cat package.json 2>/dev/null | grep -A20 '"scripts"'

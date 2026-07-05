@@ -6,6 +6,8 @@ description: Run unit tests, then smoke-test the running app by hitting key rout
 
 Run the fast test suite, then smoke-test the running app by hitting its key routes and checking for server errors. Detect how this project tests and serves itself — don't assume a stack.
 
+If `.claude/essentials-profile.md` exists, read it first — its `Test` command feeds Step 1 and its `Run` command (with the local URL/port) feeds Step 2; skip the detection greps for anything it answers.
+
 ## Step 1 — Run the fast tests
 
 Detect and run the unit/fast suite (see the `/test` detection: README → `make test` → `npm test` → `pytest` → `go test`, etc., preferring a "unit"-scoped variant if one exists). If anything fails, stop and report: `Tests failed — fix before smoke-testing the app.`

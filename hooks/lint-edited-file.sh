@@ -28,9 +28,18 @@ check() {
   return 0
 }
 
+# live-secret guard — warn the moment an obvious credential lands in a source file.
+# Skips docs/examples/fixtures/tests, where key-shaped strings are usually intentional.
+case "$file" in
+  *.md|*.env.example|*example*|*fixture*|*test*|*spec*) : ;;
+  *) if grep -qE 'sk_live|pk_live|whsec_|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY' "$file" 2>/dev/null; then
+       echo "[essentials] possible live secret in $file — move it to env/config before committing." >&2
+     fi ;;
+esac
+
 case "$file" in
   *.php)            check php   php -l "$file" ;;
-  *.py)             check python3 python3 -m py_compile "$file" ;;
+  *.py)             check python3 python3 -c 'import ast,sys; ast.parse(open(sys.argv[1]).read(), sys.argv[1])' "$file" ;;
   *.js|*.cjs|*.mjs) check node  node --check "$file" ;;
   *.rb)             check ruby  ruby -c "$file" ;;
   *.go)             check gofmt gofmt -e "$file" ;;
