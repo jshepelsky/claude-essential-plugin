@@ -15,10 +15,10 @@ You are a route auditor. Audit the route table against the handlers it points to
 ```bash
 ls; cat README* 2>/dev/null | head -30
 ls routes/ config/routes.rb urls.py 2>/dev/null
-grep -rlEn "Route::|router\.(get|post)|app\.(get|post)|@(app|router)\.(route|get|post)|->(get|post)\(|addRoute" . 2>/dev/null | grep -v -E 'vendor/|node_modules/' | head
+grep -rlE "Route::|router\.(get|post)|app\.(get|post)|@(app|router)\.(route|get|post)|->(get|post)\(|addRoute" . 2>/dev/null | grep -v -E 'vendor/|node_modules/' | head
 ```
 
-Determine whether routing is **explicit** (a central route table mapping paths to handler references — Express, Laravel, a custom router, Flask with `add_url_rule`) or **convention-based** (the framework maps URLs to handlers by naming convention — Rails resources, Next.js file routing, Django with included urlconfs). The audit below targets explicit routing; if routing is convention-based, say so and focus only on dangling handler references.
+The profile's `Routes` line answers this directly if present. Otherwise determine whether routing is **explicit** (a central route table mapping paths to handler references — Express, Laravel, a custom router, Flask with `add_url_rule`) or **convention-based** (the framework maps URLs to handlers by naming convention — Rails resources, Next.js file routing, Django with included urlconfs). The audit below targets explicit routing; if routing is convention-based, say so and focus only on dangling handler references.
 
 ## Step 1 — Extract the routes
 

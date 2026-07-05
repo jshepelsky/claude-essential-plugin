@@ -42,6 +42,7 @@ Or point Claude Code at a local clone:
 | `/docs-sync [path]` | Find docs/docstrings that drifted from the changed code |
 | `/commit [paths]` | Stage logical groups and write a clean commit message from the diff |
 | `/pr [notes]` | Open a PR with title/body generated from the branch diff |
+| `/changelog [version\|range]` | Generate release notes from git history since the last tag |
 | `/tooling-audit` | Audit/repair the project's own Claude primitives |
 
 Each review command is backed by a subagent of the same purpose under `agents/`, so they also run automatically when relevant (and in parallel via `/code-review`).
@@ -60,11 +61,21 @@ Plus a rewrite skill:
 
 ### Workflows
 
-Multi-agent scripts in `workflows/` (run with the Workflow tool): `pre-pr-review`, `dead-code-sweep`, `e2e-failure-triage`.
+Multi-agent scripts in `workflows/` (run with the Workflow tool):
+
+- **pre-pr-review** — tests, then parallel security/logic/performance/lint/route/dependency review of the branch diff.
+- **codebase-health** — the repo-wide counterpart: all audit agents over the entire codebase, synthesized into one prioritized report with a per-dimension scoreboard. Run it once when adopting a codebase (right after `/first-run`).
+- **dead-code-sweep** — unreferenced files, assets, templates, and unrouted handlers across the full repo.
+- **e2e-failure-triage** — parse E2E results and diagnose the root cause of each failure.
 
 ### Hooks
 
-`hooks/hooks.json` registers one `PostToolUse` hook that runs a language-appropriate **syntax check** on each edited file (`php -l`, `python -m py_compile`, `node --check`, `ruby -c`, `gofmt -e`, `bash -n`, `jq`). It's silent on success, non-blocking on failure, and skips any language whose tool isn't installed. To disable it, remove the `hooks` block from `hooks/hooks.json`.
+`hooks/hooks.json` registers two hooks by default:
+
+- **PostToolUse** — on each edited file, a language-appropriate **syntax check** (`php -l`, a Python AST parse, `node --check`, `ruby -c`, `gofmt -e`, `bash -n`, `jq`) plus a **live-secret guard** that warns if an obvious credential (`sk_live`, AWS key, private-key block) lands in a source file (docs/examples/fixtures/tests are skipped). Silent on success, non-blocking on failure, skips any language whose tool isn't installed.
+- **SessionStart** — a one-line nudge to run `/first-run` when the repo has no `.claude/essentials-profile.md` yet. Silence with `ESSENTIALS_NO_NUDGE=1`.
+
+To disable either, remove its entry from `hooks/hooks.json`.
 
 **Opt-in:** `hooks/run-tests-on-stop.sh` runs the project's fast test suite when Claude finishes a turn, so regressions surface immediately. It's **not registered by default** (running the full suite every turn is noisy). To enable, add a `Stop` hook to `hooks/hooks.json`:
 
@@ -73,17 +84,21 @@ Multi-agent scripts in `workflows/` (run with the Workflow tool): `pre-pr-review
   "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run-tests-on-stop.sh\"" }] }]
 ```
 
-It detects the test command from `package.json`/`pytest`/`go.mod`/`Gemfile`/`Makefile`; override with the `ESSENTIALS_TEST_CMD` env var.
+It picks the test command in priority order: the `ESSENTIALS_TEST_CMD` env var → the `/first-run` profile's verified `Test` command → generic detection from `package.json`/`pytest`/`go.mod`/`Gemfile`/`Makefile`.
 
 ## Tailoring to your codebase
 
-Run **`/first-run`** once per project. It detects your stack, commands, layout, conventions, and domain, then writes `.claude/essentials-profile.md` and imports it from your `CLAUDE.md`. Every agent and detection skill reads that profile first and trusts it over re-detection — so reviews use *your* test/lint commands, skip *your* generated dirs, and judge against *your* conventions.
+Run **`/first-run`** once per project. It detects your stack, commands (unit *and* E2E test, lint, typecheck, build, run + local URL), default branch, layout (source, tests, migrations + dialect, routing style, templates, docs, skip dirs), webhook integrations, conventions, and domain — verifying each command actually exists before recording it — then writes `.claude/essentials-profile.md` and imports it from your `CLAUDE.md`.
+
+Every primitive reads that profile first and trusts it over re-detection: the review agents use its layout and default branch, `/test` and `/smoke-test` use its commands, the workflows use its test command and diff base, and the opt-in test hook runs its verified `Test` command. Re-running `/first-run` updates the profile in place and preserves your hand edits.
 
 The profile is a plain markdown file in your repo — edit it by hand anytime. The plugin's own files stay generic, so this customization survives plugin updates and never leaks between projects.
 
 ## Design
 
 Every agent starts by detecting the language, framework, and toolchain from the repo (or reading the `/first-run` profile if present), then applies its universal checks to the idioms it actually finds — so the same `security-reviewer` works whether the project is Django, Laravel, or Express. Nothing is wired to a specific project's paths, build commands, or domain.
+
+Review scope is branch-aware: agents review uncommitted changes if there are any, otherwise the whole branch against the default branch (merge-base), falling back to the last commit only when already on the default branch.
 
 ## License
 

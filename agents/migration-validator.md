@@ -26,7 +26,14 @@ Determine: which tool (Rails AR / Django / Alembic / Phinx / Knex / Sequelize / 
 git diff --name-only HEAD ; git diff --name-only --cached
 ```
 
-If nothing staged/unstaged, fall back to the last commit:
+If the working tree is clean, check the whole branch — diff against the default branch (the profile's `Default branch`, else detect it):
+
+```bash
+base=$(git symbolic-ref -q --short refs/remotes/origin/HEAD | sed 's|.*/||'); base=${base:-main}
+git diff --name-only $(git merge-base "$base" HEAD) HEAD
+```
+
+If that's empty too (you're on the default branch), fall back to the last commit:
 
 ```bash
 git diff --name-only HEAD~1 HEAD

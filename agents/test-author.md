@@ -18,6 +18,13 @@ Scope from the argument, or default to changed files:
 git diff --name-only HEAD; git diff --name-only --cached
 ```
 
+If the working tree is clean, cover the whole branch — diff against the default branch (the profile's `Default branch`, else detect it):
+
+```bash
+base=$(git symbolic-ref -q --short refs/remotes/origin/HEAD | sed 's|.*/||'); base=${base:-main}
+git diff --name-only $(git merge-base "$base" HEAD) HEAD
+```
+
 Skip files that are themselves tests, config, or generated.
 
 ## Step 2 — Detect the test setup

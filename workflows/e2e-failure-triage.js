@@ -10,7 +10,7 @@ export const meta = {
 
 phase('Parse')
 const parsed = await agent(
-  'Detect this project\'s end-to-end test runner (Playwright, Cypress, Selenium, etc.) and find its latest results/report file (look for a JSON reporter output, a test-results/ or report dir referenced in the runner config or package.json). Read it and return the list of failing tests. If no results file exists, set noResultsFound and suggest the command to run the E2E suite first.',
+  'Detect this project\'s end-to-end test runner (the Test (E2E) line in .claude/essentials-profile.md if present, else Playwright/Cypress/Selenium config) and find its latest results/report file (look for a JSON reporter output, a test-results/ or report dir referenced in the runner config or package.json). Read it and return the list of failing tests. If no results file exists, set noResultsFound and suggest the command to run the E2E suite first.',
   {
     phase: 'Parse',
     schema: {
@@ -48,11 +48,17 @@ if (!parsed.failures.length) {
   return { message: 'All tests passed.' }
 }
 
-log(`Triaging ${parsed.totalFailed} failing test(s)...`)
+const MAX_DIAGNOSE = 20
+const toDiagnose = parsed.failures.slice(0, MAX_DIAGNOSE)
+if (parsed.failures.length > MAX_DIAGNOSE) {
+  log(`Triaging the first ${MAX_DIAGNOSE} of ${parsed.failures.length} failures — re-run after fixing to triage the rest.`)
+} else {
+  log(`Triaging ${toDiagnose.length} failing test(s)...`)
+}
 
 phase('Diagnose')
 const diagnoses = await pipeline(
-  parsed.failures,
+  toDiagnose,
   failure => agent(
     `Diagnose this failing end-to-end test. Detect the app's stack first.\n\nTest: ${failure.title}\nSpec file: ${failure.specFile}\nError: ${failure.error}\n\nRead the spec file and trace back to the relevant server-side handler/model/template (or client component). Categorize the root cause as one of:\n(A) Logic bug — wrong data returned or incorrect server/client behavior\n(B) UI/selector regression — a selector no longer matches the rendered output\n(C) Data/fixture issue — the test depends on data that doesn't exist or has wrong state\n(D) Flaky — timing, race, or environment-dependent\n\nReturn: category, the specific file and line causing the failure, and a one-line fix suggestion.`,
     { phase: 'Diagnose', label: failure.title }

@@ -12,6 +12,8 @@ Supports optional flags in `$ARGUMENTS`:
 
 ---
 
+If `.claude/essentials-profile.md` exists, read it first — its `Layout`/`Skip` lines drive the bucketing below, and its `Default branch` sets the diff base.
+
 ## Step 1 — Identify what changed
 
 ```bash
@@ -19,7 +21,14 @@ git diff --name-only HEAD
 git diff --name-only --cached
 ```
 
-If both are empty, fall back to the last commit:
+If the working tree is clean, review the whole branch — diff against the default branch (the profile's `Default branch`, else detect it):
+
+```bash
+base=$(git symbolic-ref -q --short refs/remotes/origin/HEAD | sed 's|.*/||'); base=${base:-main}
+git diff --name-only $(git merge-base "$base" HEAD) HEAD
+```
+
+If that's empty too (you're on the default branch), fall back to the last commit:
 
 ```bash
 git diff --name-only HEAD~1 HEAD
@@ -45,20 +54,20 @@ If nothing reviewable changed (only vendored deps, lockfiles, docs), print "Noth
 
 Pick agents from the buckets, then launch **all** of them in a single message (multiple Agent tool calls) so they run concurrently:
 
-| Agent (`subagent_type`) | Run when |
+| Agent (`subagent_type`, prefixed `essentials:` when installed as a plugin) | Run when |
 |---|---|
-| `linter` | always |
-| `logic-reviewer` | `code` non-empty |
-| `security-reviewer` | `code` or `templates` non-empty |
-| `performance-reviewer` | `data_access` non-empty |
-| `webhook-reviewer` | `webhooks` non-empty |
-| `route-auditor` | `routes` non-empty |
-| `migration-validator` | `migrations` non-empty |
-| `dependency-auditor` | `manifests` non-empty |
-| `docs-syncer` | a documented surface changed (public signature, CLI flag, env var, config key, route) |
-| `copy-reviewer` | `templates` non-empty (or user-facing strings changed) |
+| `essentials:linter` | always |
+| `essentials:logic-reviewer` | `code` non-empty |
+| `essentials:security-reviewer` | `code` or `templates` non-empty |
+| `essentials:performance-reviewer` | `data_access` non-empty |
+| `essentials:webhook-reviewer` | `webhooks` non-empty |
+| `essentials:route-auditor` | `routes` non-empty |
+| `essentials:migration-validator` | `migrations` non-empty |
+| `essentials:dependency-auditor` | `manifests` non-empty |
+| `essentials:docs-syncer` | a documented surface changed (public signature, CLI flag, env var, config key, route) |
+| `essentials:copy-reviewer` | `templates` non-empty (or user-facing strings changed) |
 
-Pass each agent the changed-file scope from Step 1 (e.g. "Review these changed files: …"). Wait for all agents to complete before continuing.
+Use the exact agent names from your available-agents list (unnamespaced if the agents were copied into `.claude/agents/`). Pass each agent the changed-file scope from Step 1 (e.g. "Review these changed files: …"). Wait for all agents to complete before continuing.
 
 ---
 

@@ -8,6 +8,7 @@
 # Non-blocking: always exits 0 so it never wedges the session.
 # ponytail: greps package.json/Makefile for a test script — no per-project config.
 #   Set ESSENTIALS_TEST_CMD to override detection if a repo needs something specific.
+# Priority: ESSENTIALS_TEST_CMD > the /first-run profile's verified Test command > generic detection.
 
 set -u
 cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null || exit 0
@@ -15,6 +16,10 @@ cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null || exit 0
 have() { command -v "$1" >/dev/null 2>&1; }
 
 cmd="${ESSENTIALS_TEST_CMD:-}"
+if [ -z "$cmd" ] && [ -f .claude/essentials-profile.md ]; then
+  cmd=$(sed -n 's/^- Test:[[:space:]]*//p' .claude/essentials-profile.md | head -1 | tr -d '`')
+  case "$cmd" in *unconfirmed*|*…*) cmd="" ;; esac
+fi
 if [ -z "$cmd" ]; then
   if [ -f package.json ] && grep -q '"test"' package.json && have npm; then
     cmd="npm test --silent"

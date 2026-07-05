@@ -4,7 +4,7 @@ description: Audit user-facing copy for AI writing tells and style violations.
 
 Audit user-facing copy for AI writing giveaways and style violations: $ARGUMENTS
 
-Use the Agent tool with `subagent_type: copy-reviewer`. If `$ARGUMENTS` contains a path or file, scope the scan to it; otherwise the agent defaults to user-facing text across the repo (templates/views, UI strings, README/docs, email templates).
+Use the Agent tool with `subagent_type: essentials:copy-reviewer` (unnamespaced `copy-reviewer` if not installed as a plugin). If `$ARGUMENTS` contains a path or file, scope the scan to it; otherwise the agent defaults to user-facing text across the repo (templates/views, UI strings, README/docs, email templates).
 
 Report all violations grouped by file:
 

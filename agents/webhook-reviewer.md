@@ -12,7 +12,7 @@ You are a webhook-integration specialist. Inbound webhooks are a security and re
 
 ## Step 0 — Find the webhook path
 
-Detect the provider and locate the receiver, the signature-verification code, and the event-dispatch logic:
+The profile's `Webhooks` line names the provider(s) and receiver path(s) if present — start there (and if it says `none`, confirm with one quick grep and report "no webhook handlers found" rather than searching exhaustively). Otherwise detect the provider and locate the receiver, the signature-verification code, and the event-dispatch logic:
 
 ```bash
 grep -rEn 'webhook|whsec_|X-Hub-Signature|Stripe-Signature|HMAC|constructEvent|verify.*[Ss]ignature' . 2>/dev/null | grep -v -E 'vendor/|node_modules/'
