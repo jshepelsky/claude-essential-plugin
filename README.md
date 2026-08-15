@@ -102,4 +102,4 @@ Review scope is branch-aware: agents review uncommitted changes if there are any
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) © JShep Labs LLC
