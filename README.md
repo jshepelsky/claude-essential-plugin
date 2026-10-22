@@ -17,13 +17,47 @@ Or point Claude Code at a local clone:
 /plugin marketplace add /path/to/claude-essential-plugin
 ```
 
+## The workflow
+
+Run `/first-run` once per project. Then `/ship <feature>` walks every step below with a checkpoint at each one, or run the steps yourself. Progress lives in `.claude/work/<slug>/` (brief, plan, mockups, test plan, phases, status, per-phase handoffs), so a new session can `/ship resume <slug>`.
+
+| # | Step | Command |
+|---|---|---|
+| 1 | Plan from requirements, mocks, context, and the current code; research, questions, recommendations, stack decision; covers performance, security, design, copy | `/plan` |
+| 2 | Review the plan: reuse existing code, standards, security, performance | `/review-plan plan` |
+| 3-4 | Mockups when no design was supplied, then a researched review | `/mockup create`, `/mockup review` |
+| 5-7 | Test plan (unit, browser, Playwright, simulator, API, perf, security, a11y, manual), its review, and a cross-check with the plan | `/test-plan`, `/review-plan tests`, `/review-plan all` |
+| 8-9 | Phase plan with dependencies and blockers, then a final readiness review | `/phase-plan`, `/review-plan all` |
+| 10 | Dev files: CLAUDE.md, profile, feature notes | `/dev-setup` |
+| 11 | Build one phase: code, planned tests every way, per-phase code review, handoff with branch name, commit message, and how to see it | `/develop N` |
+| 12-14 | Full testing to 100% on changed files, code review with every agent, final testing | `/test-all`, `/code-review`, `/test-all --final` |
+| 15-17 | Deploy (staging preferred), then full tests on staging or data-safe tests on production | `/deploy <env>`, `/env-test <env>` |
+| 18 | Fix loop until the environment tests are clean | (ship loops 12 → 17) |
+| 19 | Documentation, CLAUDE.md, process docs | `/document` |
+
+**Claude never commits, branches, pushes, merges, or tags in this workflow.** Each phase ends with a suggested branch name and commit message; you review and commit. Git-driven deploys tell you the exact push or merge to do, then watch the pipeline. Production deploys need an explicit yes on the exact command.
+
 ## What's included
 
-### Commands
+### Skills
 
-| Command | What it does |
+Every skill is a slash command of the same name and lives at `skills/<name>/SKILL.md` (the current Claude Code format; the old `commands/` layout is gone). `/ship`, `/commit`, and `/pr` are marked `disable-model-invocation`, so only you can start them.
+
+| Skill | What it does |
 |---|---|
 | `/first-run` | One-time: detect this codebase and write a profile every primitive specializes to (see [Tailoring](#tailoring-to-your-codebase)) |
+| `/ship <feature>` / `/ship resume <slug>` | Orchestrates the 19-step workflow above with a checkpoint per step |
+| `/plan` | Step 1: brief + implementation plan in `.claude/work/<slug>/` |
+| `/review-plan plan\|tests\|phases\|all` | Steps 2, 6, 7, 9: fresh-context reviewer agents over a plan, or all plans for consistency; applies fixes, asks you the rest |
+| `/mockup create\|review` | Steps 3-4: HTML mockups with research when no design exists, then review |
+| `/test-plan` | Step 5: the test plan across every layer |
+| `/phase-plan` | Step 8: dependency-ordered phases with blockers |
+| `/dev-setup` | Step 10: CLAUDE.md, profile, and feature notes |
+| `/develop N` | Step 11: build one phase, test it every way, review it, hand off |
+| `/test-all [--final]` | Steps 12 and 14: every suite, 100% coverage on changed files, add tests, fix |
+| `/deploy <env>` | Step 15: preflight, deploy via the project's mechanism (you do any git action), verify |
+| `/env-test staging\|production` | Steps 16-17: tests against the deployed environment, data-safe on prod |
+| `/document` | Step 19: docs, CLAUDE.md, process docs, close the work folder |
 | `/code-review [--fix] [--comment]` | Orchestrates the relevant review agents over the current diff and synthesizes one prioritized report |
 | `/security-review [path]` | Injection, auth/authz, CSRF, secrets, XSS |
 | `/logic-review [path]` | Correctness bugs linters miss |
@@ -45,9 +79,11 @@ Or point Claude Code at a local clone:
 | `/changelog [version\|range]` | Generate release notes from git history since the last tag |
 | `/tooling-audit` | Audit/repair the project's own Claude primitives |
 
-Each review command is backed by a subagent of the same purpose under `agents/`, so they also run automatically when relevant (and in parallel via `/code-review`).
+Each review skill is backed by a subagent of the same purpose under `agents/`, so they also run automatically when relevant (and in parallel via `/code-review`).
 
-### Skills
+The workflow's review steps run the same way, in agents that haven't seen the plan being written: `plan-reviewer` (opus), `test-plan-reviewer`, `phase-reviewer`, `plan-consistency-reviewer` (opus), and `mockup-reviewer` (with web research). All five are read-only and return findings; `/review-plan` and `/mockup review` apply them and bring the open questions to you.
+
+### Triage and rewrite skills
 
 Evidence-first triage procedures — detect the stack, gather proof, then propose one narrow next step (no guessing, no premature fix):
 
@@ -88,7 +124,7 @@ It picks the test command in priority order: the `ESSENTIALS_TEST_CMD` env var �
 
 ## Tailoring to your codebase
 
-Run **`/first-run`** once per project. It detects your stack, commands (unit *and* E2E test, lint, typecheck, build, run + local URL), default branch, layout (source, tests, migrations + dialect, routing style, templates, docs, skip dirs), webhook integrations, conventions, and domain — verifying each command actually exists before recording it — then writes `.claude/essentials-profile.md` and imports it from your `CLAUDE.md`.
+Run **`/first-run`** once per project. It detects your stack, commands (unit *and* E2E test, lint, typecheck, build, run + local URL), default branch, layout (source, tests, migrations + dialect, routing style, templates, docs, skip dirs), webhook integrations, deploy mechanism (per-environment trigger/command, URLs, health check, logs, rollback), conventions, and domain — verifying each command actually exists before recording it — then writes `.claude/essentials-profile.md` and imports it from your `CLAUDE.md`.
 
 Every primitive reads that profile first and trusts it over re-detection: the review agents use its layout and default branch, `/test` and `/smoke-test` use its commands, the workflows use its test command and diff base, and the opt-in test hook runs its verified `Test` command. Re-running `/first-run` updates the profile in place and preserves your hand edits — it's also the upgrade path after plugin updates: when a new plugin version adds profile fields, the session-start nudge tells you to re-run it.
 

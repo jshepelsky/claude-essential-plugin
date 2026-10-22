@@ -1,10 +1,14 @@
 {
   "name": "essentials",
-  "description": "Codebase-agnostic code-review and quality primitives: security, logic, performance, lint, dead-code, dependency, copy, UI, migration, route, webhook, docs, and test agents; an orchestrated /code-review; git commit/PR helpers; evidence-first triage skills; and a /first-run profile that tailors them all to your stack. Stack-detecting — works on any language or framework.",
-  "version": "1.3.1",
+  "description": "Codebase-agnostic delivery and quality primitives: a 19-step /ship workflow (plan, reviews, mockups, test plan, phases, phased development, testing, code review, deploy, environment tests, docs); security, logic, performance, lint, dead-code, dependency, copy, UI, migration, route, webhook, docs, and test agents; an orchestrated /code-review; git commit/PR helpers; evidence-first triage skills; and a /first-run profile that tailors them all to your stack. Stack-detecting \u2014 works on any language or framework.",
+  "version": "1.4.0",
   "author": {
-    "name": "JShep Labs"
+    "name": "JShep Labs",
+    "url": "https://github.com/jshepelsky"
   },
+  "homepage": "https://github.com/jshepelsky/claude-essential-plugin",
+  "repository": "https://github.com/jshepelsky/claude-essential-plugin",
+  "license": "MIT",
   "keywords": [
     "code-review",
     "security",
@@ -12,6 +16,9 @@
     "quality",
     "testing",
     "dependencies",
-    "dead-code"
+    "dead-code",
+    "workflow",
+    "planning",
+    "deploy"
   ]
 }
